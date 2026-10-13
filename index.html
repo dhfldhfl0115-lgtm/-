@@ -37,6 +37,9 @@
     .player-badge{display:inline-block;margin-left:6px;border-radius:99px;background:#edf3ff;color:#3656a8;padding:3px 8px;font-size:.78rem;font-weight:650}
     button.kick-btn{min-height:34px;padding:6px 10px;border-radius:8px;background:#fff0f0;color:#b42318;box-shadow:none;font-size:.84rem}
     button.kick-btn:hover:not(:disabled){background:#ffe2e2;box-shadow:none}
+    button.copy-code{display:inline-flex;align-items:center;gap:8px;min-height:0;padding:0;background:transparent;color:#375ed0;box-shadow:none}
+    button.copy-code:hover:not(:disabled){transform:none;filter:none;box-shadow:none}
+    #copyStatus{font-size:.78rem;color:#66758c;font-weight:600}
     @media(max-width:560px){body{padding:18px 13px}h1+p{margin-bottom:20px}.card{border-radius:15px}}
   </style>
 </head>
@@ -49,7 +52,7 @@
     <div class="row"><div class="field"><label for="roomCode">방 코드</label><input id="roomCode" maxlength="6" placeholder="예: A3K9QW" autocapitalize="characters"></div><button id="joinRoom" class="secondary">참가하기</button></div>
   </section>
   <section id="game" class="hidden">
-    <section class="card"><div class="row" style="justify-content:space-between"><div><h2 id="roomTitle">실험 방</h2><div>방 코드 <span id="code" class="room"></span></div></div><span id="role" class="pill"></span><button id="leaveRoom" class="secondary">방 나가기</button></div><p id="roomMessage" class="muted"></p></section>
+    <section class="card"><div class="row" style="justify-content:space-between"><div><h2 id="roomTitle">실험 방</h2><div>방 코드 <button id="copyCode" class="copy-code" type="button" aria-label="방 코드 복사"><span id="code" class="room"></span><span id="copyStatus" aria-live="polite">복사</span></button></div></div><span id="role" class="pill"></span><button id="leaveRoom" class="secondary">방 나가기</button></div><p id="roomMessage" class="muted"></p></section>
     <section id="lobby" class="card"><h2>참가자</h2><ol id="players" class="list"></ol><p class="muted">게임은 5회차입니다. 각자 10포인트로 시작하며, 기여한 포인트는 잔액에서 차감됩니다. 반환과 팀 보너스는 게임 점수에 쌓입니다.</p><div id="hostControls" class="hidden"><div class="row"><div class="field"><label for="condition">첫 회차 조건</label><select id="condition"><option value="A">A — 비공개 · 보너스 없음</option><option value="B">B — 공개 · 보너스 없음</option><option value="C">C — 비공개 · 보너스 있음</option><option value="D">D — 공개 · 보너스 있음</option></select></div><button id="start">실험 시작</button></div></div><p id="waiting" class="muted"></p></section>
     <section id="round" class="card hidden"><div class="row" style="justify-content:space-between"><h2 id="roundTitle">1회차 / 5회차</h2><span id="conditionBadge" class="pill"></span></div><p id="roundHelp" class="muted"></p><div id="liveChoices"></div><p id="balanceStatus" class="status"></p><div id="choiceBox" class="row"><div class="field"><label for="contribution">이번 기여량</label><input id="contribution" type="number" min="0" max="10" step="1" value="0"></div><button id="submit">기여 제출</button></div><p id="submitted" class="status"></p></section>
     <section id="result" class="card hidden"><h2>회차 결과</h2><div id="resultStats" class="stats"></div><p id="myScore" class="notice"></p><div id="resultTable"></div><div id="nextControls" class="hidden"><div class="row"><div class="field"><label for="nextCondition">다음 회차 조건</label><select id="nextCondition"><option value="A">A — 비공개 · 보너스 없음</option><option value="B">B — 공개 · 보너스 없음</option><option value="C">C — 비공개 · 보너스 있음</option><option value="D">D — 공개 · 보너스 있음</option></select></div><button id="next">다음 회차 시작</button></div></div><p id="waitingNext" class="muted"></p><div id="gameFinished" class="hidden"><p class="notice">5회차가 끝났습니다. 최종 결과를 확인하고 메인 화면으로 돌아갈 수 있습니다.</p><button id="returnHome" class="secondary">메인 화면으로</button></div></section>
@@ -91,6 +94,7 @@
   }
   $('makeRoom').onclick=make;$('joinRoom').onclick=join;
   $('leaveRoom').onclick=async()=>{if(!session)return;const current={...session};try{await api('/api/leave',current)}catch{}exitRoom('방에서 나왔습니다.')};
+  $('copyCode').onclick=async()=>{const code=$('code').textContent;if(!code)return;let copied=false;try{await navigator.clipboard.writeText(code);copied=true}catch{const field=document.createElement('textarea');field.value=code;field.style.position='fixed';field.style.opacity='0';document.body.appendChild(field);field.select();copied=document.execCommand('copy');field.remove()}if(!copied){showError('복사하지 못했습니다. 방 코드를 직접 선택해 복사해 주세요.');return}const status=$('copyStatus');status.textContent='복사됨';setTimeout(()=>{if(status.isConnected)status.textContent='복사'},1600)};
   $('players').addEventListener('click',async event=>{const button=event.target.closest('[data-kick]');if(!button||!session)return;const playerId=button.dataset.kick;const player=button.dataset.playerName||'참가자';if(!confirm(`${player} 님을 방에서 내보낼까요?`))return;try{await api('/api/kick',{...session,playerId});showError(`${player} 님을 방에서 내보냈습니다.`);refresh()}catch(e){showError(e.message)}});
   $('start').onclick=async()=>{try{await api('/api/start',{...session,condition:$('condition').value});showError('');refresh()}catch(e){showError(e.message)}};
   $('submit').onclick=async()=>{const v=$('contribution').value;try{await api('/api/contribute',{...session,value:v});$('contribution').value='0';showError('');refresh()}catch(e){showError(e.message)}};
