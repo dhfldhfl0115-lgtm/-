@@ -1,8 +1,9 @@
 services:
   - type: web
-    name: cooperation-game
+    name: cooperation-game-dhfldhfl0115
     runtime: node
     plan: free
+    region: singapore
     buildCommand: echo "No build step required"
     startCommand: node server.js
     healthCheckPath: /
