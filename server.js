@@ -6,6 +6,7 @@ const crypto = require('node:crypto');
 const PORT = Number(process.env.PORT || 3000);
 const rooms = new Map();
 const root = __dirname;
+const INACTIVE_LIMIT_MS = 90_000;
 const conditions = { A: { public: false, bonus: false }, B: { public: true, bonus: false }, C: { public: false, bonus: true }, D: { public: true, bonus: true } };
 
 function token() { return crypto.randomBytes(24).toString('hex'); }
@@ -38,6 +39,25 @@ function auth(room, key) {
   if (!player) return null;
   return { role: player.id === room.hostId ? 'host' : 'player', player };
 }
+function removePlayer(room, player) {
+  const index = room.players.findIndex(item => item.id === player.id);
+  if (index < 0) return;
+  room.players.splice(index, 1);
+  if (room.round?.phase === 'playing') {
+    room.round.submissions.delete(player.id);
+    if (room.players.length > 0) completeRound(room);
+  }
+  if (room.hostId === player.id) room.hostId = room.players[0]?.id || null;
+  if (room.players.length === 0) rooms.delete(room.code);
+}
+function pruneInactivePlayers() {
+  const now = Date.now();
+  for (const room of [...rooms.values()]) {
+    for (const player of [...room.players]) {
+      if (now - player.lastSeen > INACTIVE_LIMIT_MS) removePlayer(room, player);
+    }
+  }
+}
 function completeRound(room) {
   const round = room.round;
   if (round.phase !== 'playing' || round.submissions.size !== room.players.length) return;
@@ -58,7 +78,7 @@ function view(room, access) {
       ? item.players.map(p => ({ name: p.name, contribution: p.contribution, score: p.score }))
       : [item.players.find(p => p.id === access.player.id)].filter(Boolean).map(p => ({ name: p.name, contribution: null, score: p.score }))
   }));
-  const result = { code: room.code, phase: room.round ? room.round.phase : 'lobby', players: room.players.map(p => ({ name: p.name })), round: null, history };
+  const result = { code: room.code, role: access.role, phase: room.round ? room.round.phase : 'lobby', players: room.players.map(p => ({ id: p.id, name: p.name, isHost: p.id === room.hostId })), round: null, history };
   if (!room.round) return result;
   const r = room.round;
   if (r.phase === 'playing') {
@@ -83,7 +103,7 @@ function view(room, access) {
 async function handleApi(req, res, url) {
   if (req.method === 'POST' && url.pathname === '/api/rooms') {
     const data = await readBody(req); const code = roomCode(); const hostToken = token(); const hostId = token();
-    const host = { id: hostId, token: hostToken, name: validName(data.name, '방장') };
+    const host = { id: hostId, token: hostToken, name: validName(data.name, '방장'), lastSeen: Date.now() };
     const room = { code, hostToken, hostId, players: [host], round: null, nextNumber: 1, history: [] };
     rooms.set(code, room);
     return json(res, 201, { code, token: hostToken });
@@ -93,15 +113,35 @@ async function handleApi(req, res, url) {
     if (!room) return fail(res, 404, '방을 찾을 수 없습니다. 코드를 확인해 주세요.');
     if (room.round) return fail(res, 409, '이미 시작된 방에는 참가할 수 없습니다.');
     if (room.players.length >= 4) return fail(res, 409, '방장 포함 최대 네 명까지 참가할 수 있습니다.');
-    const player = { id: token(), token: token(), name: validName(data.name, `참가자 ${room.players.length + 1}`) };
+    const player = { id: token(), token: token(), name: validName(data.name, `참가자 ${room.players.length + 1}`), lastSeen: Date.now() };
     room.players.push(player);
     return json(res, 201, { code, token: player.token });
+  }
+  if (req.method === 'POST' && url.pathname === '/api/leave') {
+    const data = await readBody(req); const room = rooms.get(String(data.code || '').toUpperCase());
+    if (!room) return json(res, 200, { ok: true });
+    const access = auth(room, data.token);
+    if (!access) return json(res, 200, { ok: true });
+    removePlayer(room, access.player);
+    return json(res, 200, { ok: true });
+  }
+  if (req.method === 'POST' && url.pathname === '/api/kick') {
+    const data = await readBody(req); const room = rooms.get(String(data.code || '').toUpperCase());
+    if (!room) return fail(res, 404, '방을 찾을 수 없습니다.');
+    const access = auth(room, data.token);
+    if (!access) return fail(res, 403, '이 방에 접근할 수 없습니다.');
+    if (access.role !== 'host') return fail(res, 403, '방장만 참가자를 내보낼 수 있습니다.');
+    const target = room.players.find(player => player.id === data.playerId);
+    if (!target || target.id === room.hostId) return fail(res, 404, '내보낼 참가자를 찾을 수 없습니다.');
+    removePlayer(room, target);
+    return json(res, 200, { ok: true });
   }
   if (req.method === 'GET' && url.pathname === '/api/room') {
     const room = rooms.get(String(url.searchParams.get('code') || '').toUpperCase());
     if (!room) return fail(res, 404, '방을 찾을 수 없습니다.');
     const access = auth(room, url.searchParams.get('token'));
     if (!access) return fail(res, 403, '이 방에 접근할 수 없습니다.');
+    access.player.lastSeen = Date.now();
     return json(res, 200, view(room, access));
   }
   if (req.method === 'GET' && url.pathname === '/api/history') {
@@ -109,6 +149,7 @@ async function handleApi(req, res, url) {
     if (!room) return fail(res, 404, '방을 찾을 수 없습니다.');
     const access = auth(room, url.searchParams.get('token'));
     if (!access) return fail(res, 403, '이 방에 접근할 수 없습니다.');
+    access.player.lastSeen = Date.now();
     return json(res, 200, { history: view(room, access).history });
   }
   if (req.method === 'POST' && ['/api/start', '/api/contribute', '/api/next'].includes(url.pathname)) {
@@ -116,6 +157,7 @@ async function handleApi(req, res, url) {
     if (!room) return fail(res, 404, '방을 찾을 수 없습니다.');
     const access = auth(room, data.token);
     if (!access) return fail(res, 403, '이 방에 접근할 수 없습니다.');
+    access.player.lastSeen = Date.now();
     if (url.pathname === '/api/start') {
       if (access.role !== 'host') return fail(res, 403, '방장만 실험을 시작할 수 있습니다.');
       if (room.round || room.players.length < 2) return fail(res, 409, '방장 포함 두 명 이상 모인 뒤 시작할 수 있습니다.');
@@ -154,6 +196,8 @@ const server = http.createServer(async (req, res) => {
     if (!res.headersSent) fail(res, 400, error.message || '요청을 처리할 수 없습니다.');
   }
 });
+
+setInterval(pruneInactivePlayers, 10_000).unref();
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`협력 게임 서버 실행 중: http://localhost:${PORT}`);
