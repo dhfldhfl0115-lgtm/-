@@ -21,7 +21,7 @@ Windows에서 같은 Wi-Fi 접속이 안 되면 컴퓨터 방화벽이 Node.js�
 2. GitHub에서 새 저장소를 만듭니다. 저장소 이름은 예를 들어 `cooperation-game`으로 정합니다.
 3. 이 `outputs` 폴더의 `index.html`, `server.js`, `render.yaml`, `README.md` 파일을 저장소의 최상위에 올립니다. GitHub 저장소 화면의 **Add file → Upload files**에서 파일들을 선택하고 **Commit changes**를 누르면 됩니다.
 4. Render에서 **New → Blueprint**를 선택하고 방금 만든 GitHub 저장소를 연결합니다. `render.yaml` 설정을 확인하고 **Deploy Blueprint**를 누릅니다.
-5. 배포가 끝나면 Render 서비스 화면의 `onrender.com` 주소를 친구들에게 공유합니다. [Render 첫 배포 안내](https://render.com/docs/your-first-deploy)와 [Blueprint 안내](https://render.com/docs/infrastructure-as-code)를 참고하세요.
+5. 배포가 끝나면 Render 서비스 화면의 `onrender.com` 주소를 친구들에게 공유합니다. 현재 배포된 사이트는 [협력 게임 실험](https://cooperation-game-dhfldhfl0115.onrender.com)입니다. [Render 첫 배포 안내](https://render.com/docs/your-first-deploy)와 [Blueprint 안내](https://render.com/docs/infrastructure-as-code)를 참고하세요.
 
 GitHub 저장소는 비공개로 만들어도 Render에 연결할 수 있습니다. 코드를 웹으로 배포하는 일과 실험에 참가하는 일은 별개이며, 친구들에게는 Render가 만든 웹 주소만 보내면 됩니다.
 
@@ -43,7 +43,7 @@ GitHub 저장소는 비공개로 만들어도 Render에 연결할 수 있습니�
 ## 한계
 
 - 방과 회차 기록은 서버 프로세스 메모리에만 있습니다. 서버를 종료하거나 재시작하면 방과 기록이 사라집니다.
-- 공개 URL로 배포하면 서로 다른 네트워크에서 접속할 수 있습니다. 이 폴더의 앱은 아직 공개 URL로 배포되지 않았습니다.
+- 공개 URL로 배포하면 서로 다른 네트워크에서 접속할 수 있습니다. 현재 공개 주소는 [https://cooperation-game-dhfldhfl0115.onrender.com](https://cooperation-game-dhfldhfl0115.onrender.com)입니다.
 - 접속한 브라우저 탭은 1.2초 간격으로 서버 상태를 확인합니다. 연결이 끊겼다가 복구되면 같은 탭에서 다시 동기화됩니다.
 - 네 명의 참가자만 방에 들어갈 수 있으며 진행자는 별도 역할입니다. 진행자는 참가자 자격으로 참여하지 않습니다.
 
