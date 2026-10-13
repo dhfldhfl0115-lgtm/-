@@ -37,10 +37,10 @@
   </style>
 </head>
 <body><main>
-  <h1>협력 게임 실험</h1><p class="muted">방을 만들고 친구 네 명이 각자 기기에서 참여합니다.</p>
+  <h1>협력 게임 실험</h1><p class="muted">방장도 함께 참여합니다. 방장 포함 2–4명이 각자 기기에서 플레이할 수 있습니다.</p>
   <section id="entry" class="card"><h2>참여 방법</h2>
     <div class="row"><div class="field"><label for="name">내 이름</label><input id="name" maxlength="30" placeholder="이름"></div></div>
-    <div class="actions"><button id="makeRoom">새 방 만들기 (진행자)</button></div>
+    <div class="actions"><button id="makeRoom">방 만들기 (방장으로 참여)</button></div>
     <hr style="border:0;border-top:1px solid #e4e7ec;margin:18px 0">
     <div class="row"><div class="field"><label for="roomCode">방 코드</label><input id="roomCode" maxlength="6" placeholder="예: A3K9QW" autocapitalize="characters"></div><button id="joinRoom" class="secondary">참가하기</button></div>
   </section>
@@ -59,28 +59,28 @@
   let session=null, timer=null, lastRound=-1;
   async function api(path,data){const res=await fetch(path,{method:data?'POST':'GET',headers:{'Content-Type':'application/json',...(data?{}:{})},body:data?JSON.stringify(data):undefined});const json=await res.json();if(!res.ok)throw Error(json.error||'요청을 처리하지 못했습니다.');return json;}
   function showError(s){$('error').textContent=s||''}
-  function begin(data,role){session={...data,role};sessionStorage.setItem('cooperation-game-session',JSON.stringify(session));$('entry').classList.add('hidden');$('game').classList.remove('hidden');$('code').textContent=data.code;$('role').textContent=role==='host'?'진행자': '참가자';if(timer)clearInterval(timer);refresh();timer=setInterval(refresh,1200)}
-  async function make(){showError('');try{const d=await api('/api/rooms',{name:$('name').value.trim()||'진행자'});begin(d,'host')}catch(e){showError(e.message)}}
+  function begin(data,role){session={...data,role};sessionStorage.setItem('cooperation-game-session',JSON.stringify(session));$('entry').classList.add('hidden');$('game').classList.remove('hidden');$('code').textContent=data.code;$('role').textContent=role==='host'?'방장 · 참가 중':'참가자';if(timer)clearInterval(timer);refresh();timer=setInterval(refresh,1200)}
+  async function make(){showError('');try{const d=await api('/api/rooms',{name:$('name').value.trim()||'방장'});begin(d,'host')}catch(e){showError(e.message)}}
   async function join(){showError('');try{const d=await api('/api/join',{code:$('roomCode').value.trim().toUpperCase(),name:$('name').value.trim()});begin(d,'player')}catch(e){showError(e.message)}}
   async function refresh(){if(!session)return;try{const s=await api(`/api/room?code=${encodeURIComponent(session.code)}&token=${encodeURIComponent(session.token)}`);render(s)}catch(e){showError(e.message);clearInterval(timer)}}
   function render(s){
     $('players').innerHTML=s.players.map(p=>`<li>${esc(p.name)}</li>`).join('');
-    const history=s.history||[];$('historyCard').classList.toggle('hidden',history.length===0);$('export').classList.toggle('hidden',session.role!=='host'||history.length===0);
+    const history=s.history||[];$('historyCard').classList.toggle('hidden',history.length===0);$('export').classList.toggle('hidden',history.length===0);
     $('history').innerHTML=history.length?`<table><thead><tr><th>회차</th><th>조건</th><th>전체 기여 S</th><th>공유 반환 R</th><th>개인 결과</th></tr></thead><tbody>${history.map(r=>`<tr><td>${r.number}</td><td>${r.condition}</td><td>${r.total}</td><td>${fmt(r.returned)}</td><td>${r.players.map(p=>`${esc(p.name)}: ${p.contribution===null?'기여 비공개':p.contribution+' / '+fmt(p.score)+'점'}`).join(' · ')}</td></tr>`).join('')}</tbody></table>`:'<p class="muted">아직 완료된 회차가 없습니다.</p>';
     const lobby=s.phase==='lobby';$('lobby').classList.toggle('hidden',!lobby);$('round').classList.toggle('hidden',s.phase!=='playing');$('result').classList.toggle('hidden',s.phase!=='result');
-    if(lobby){$('hostControls').classList.toggle('hidden',session.role!=='host');$('waiting').textContent=session.role==='host'?(s.players.length<4?'참가자가 네 명 모이면 시작할 수 있습니다.':'네 명이 모두 모였습니다. 조건을 선택하고 시작하세요.'):`진행자가 실험을 시작하기를 기다리는 중입니다. (${s.players.length}/4)`; $('start').disabled=s.players.length!==4;return}
+    if(lobby){$('hostControls').classList.toggle('hidden',session.role!=='host');$('waiting').textContent=session.role==='host'?(s.players.length<2?'한 명이 더 참가하면 시작할 수 있습니다.':'현재 인원으로 시작할 수 있습니다.'):`방장이 실험을 시작하기를 기다리는 중입니다. (${s.players.length}/4)`; $('start').disabled=s.players.length<2;return}
     if(s.phase==='playing'){
       $('roundTitle').textContent=`${s.round.number}회차`;$('conditionBadge').textContent=labels[s.round.condition];
       $('roundHelp').textContent=s.round.public?'공개 조건입니다. 제출한 기여량은 모든 참가자에게 표시됩니다.':'비공개 조건입니다. 다른 참가자는 각자의 기여량을 볼 수 없습니다.';
-      $('liveChoices').innerHTML=s.round.public?`<p class="muted">제출 현황: ${s.round.submissions.map(x=>`${esc(x.name)}: ${x.value===null?'미제출':x.value}`).join(' · ')}</p>`:`<p class="muted">제출 완료 ${s.round.submittedCount}/4명</p>`;
+      $('liveChoices').innerHTML=s.round.public?`<p class="muted">제출 현황: ${s.round.submissions.map(x=>`${esc(x.name)}: ${x.value===null?'미제출':x.value}`).join(' · ')}</p>`:`<p class="muted">제출 완료 ${s.round.submittedCount}/${s.players.length}명</p>`;
       const mine=s.round.mineSubmitted;$('choiceBox').classList.toggle('hidden',mine);$('submitted').textContent=mine?'제출했습니다. 다른 참가자를 기다리는 중입니다.':'';return;
     }
     $('round').classList.add('hidden');$('result').classList.remove('hidden');
     if(lastRound!==s.round.number){$('nextCondition').value=s.round.condition;lastRound=s.round.number}
     $('resultStats').innerHTML=`<span>전체 기여 S<br><strong>${s.round.total}</strong></span><span>공유 반환 R<br><strong>${fmt(s.round.returned)}</strong></span><span>팀 보너스<br><strong>${s.round.bonus?'각 3점':'없음'}</strong></span>`;
-    $('myScore').classList.toggle('hidden',session.role==='host');$('myScore').textContent=`내 최종 점수: ${fmt(s.round.myScore)}점`;
+    $('myScore').classList.remove('hidden');$('myScore').textContent=`내 최종 점수: ${fmt(s.round.myScore)}점`;
     $('resultTable').innerHTML=s.round.public?`<table><thead><tr><th>참가자</th><th>기여량</th><th>최종 점수</th></tr></thead><tbody>${s.round.players.map(p=>`<tr><td>${esc(p.name)}</td><td>${p.contribution}</td><td>${fmt(p.score)}</td></tr>`).join('')}</tbody></table>`:'<p class="muted">비공개 조건이라 개인별 기여량과 점수는 본인에게만 표시됩니다.</p>';
-    $('nextControls').classList.toggle('hidden',session.role!=='host');$('waitingNext').textContent=session.role==='player'?'진행자가 다음 회차를 시작하기를 기다리는 중입니다.':'';
+    $('nextControls').classList.toggle('hidden',session.role!=='host');$('waitingNext').textContent=session.role==='player'?'방장이 다음 회차를 시작하기를 기다리는 중입니다.':'';
   }
   $('makeRoom').onclick=make;$('joinRoom').onclick=join;
   $('start').onclick=async()=>{try{await api('/api/start',{...session,condition:$('condition').value});showError('');refresh()}catch(e){showError(e.message)}};
