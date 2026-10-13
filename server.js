@@ -58,6 +58,7 @@ function pruneInactivePlayers() {
     }
   }
 }
+function currentScore(player) { return player.balance + player.rewardScore; }
 function completeRound(room) {
   const round = room.round;
   if (round.phase !== 'playing' || round.submissions.size !== room.players.length) return;
@@ -66,7 +67,8 @@ function completeRound(room) {
   const bonus = conditions[round.condition].bonus && total >= 24 ? 3 : 0;
   const players = room.players.map(player => {
     const contribution = round.submissions.get(player.id).value;
-    return { id: player.id, name: player.name, contribution, score: 10 - contribution + returned + bonus };
+    player.rewardScore += returned + bonus;
+    return { id: player.id, name: player.name, contribution, balance: player.balance, rewardScore: player.rewardScore, score: currentScore(player) };
   });
   round.total = total; round.returned = returned; round.bonus = bonus; round.players = players; round.phase = 'result';
   room.history.push({ number: round.number, condition: round.condition, total, returned, bonus, players });
@@ -75,8 +77,8 @@ function view(room, access) {
   const history = room.history.map(item => ({
     number: item.number, condition: item.condition, total: item.total, returned: item.returned, bonus: item.bonus,
     players: conditions[item.condition].public
-      ? item.players.map(p => ({ name: p.name, contribution: p.contribution, score: p.score }))
-      : [item.players.find(p => p.id === access.player.id)].filter(Boolean).map(p => ({ name: p.name, contribution: null, score: p.score }))
+      ? item.players.map(p => ({ name: p.name, contribution: p.contribution, balance: p.balance, score: p.score }))
+      : [item.players.find(p => p.id === access.player.id)].filter(Boolean).map(p => ({ name: p.name, contribution: null, balance: p.balance, score: p.score }))
   }));
   const result = { code: room.code, role: access.role, phase: room.round ? room.round.phase : 'lobby', players: room.players.map(p => ({ id: p.id, name: p.name, isHost: p.id === room.hostId })), round: null, history };
   if (!room.round) return result;
@@ -86,6 +88,7 @@ function view(room, access) {
     result.round = {
       number: r.number, condition: r.condition, public: conditions[r.condition].public,
       submittedCount: r.submissions.size, mineSubmitted: Boolean(own),
+      myBalance: access.player.balance, myScore: currentScore(access.player),
       submissions: conditions[r.condition].public ? room.players.map(p => ({ name: p.name, value: r.submissions.has(p.id) ? r.submissions.get(p.id).value : null })) : []
     };
     return result;
@@ -94,8 +97,9 @@ function view(room, access) {
   result.round = {
     number: r.number, condition: r.condition, public: conditions[r.condition].public,
     total: r.total, returned: r.returned, bonus: r.bonus,
-    myScore: mine ? mine.score : null,
-    players: conditions[r.condition].public ? r.players.map(p => ({ name: p.name, contribution: p.contribution, score: p.score })) : []
+    finished: r.number >= 5,
+    myBalance: access.player.balance, myScore: mine ? mine.score : null,
+    players: conditions[r.condition].public ? r.players.map(p => ({ name: p.name, contribution: p.contribution, balance: p.balance, score: p.score })) : []
   };
   return result;
 }
@@ -162,16 +166,19 @@ async function handleApi(req, res, url) {
       if (access.role !== 'host') return fail(res, 403, '방장만 실험을 시작할 수 있습니다.');
       if (room.round || room.players.length < 2) return fail(res, 409, '방장 포함 두 명 이상 모인 뒤 시작할 수 있습니다.');
       if (!conditions[data.condition]) return fail(res, 400, '실험 조건을 확인해 주세요.');
+      for (const player of room.players) { player.balance = 10; player.rewardScore = 0; }
       room.round = { number: room.nextNumber++, condition: data.condition, phase: 'playing', submissions: new Map() };
     } else if (url.pathname === '/api/contribute') {
       if (!room.round || room.round.phase !== 'playing') return fail(res, 409, '현재 진행 중인 회차가 없습니다.');
       const value = Number(data.value);
-      if (!Number.isInteger(value) || value < 0 || value > 10) return fail(res, 400, '기여량은 0부터 10 사이 정수여야 합니다.');
+      if (!Number.isInteger(value) || value < 0 || value > access.player.balance) return fail(res, 400, `기여량은 현재 보유한 ${access.player.balance}포인트 이하여야 합니다.`);
       if (room.round.submissions.has(access.player.id)) return fail(res, 409, '이미 기여량을 제출했습니다.');
+      access.player.balance -= value;
       room.round.submissions.set(access.player.id, { value }); completeRound(room);
     } else {
       if (access.role !== 'host') return fail(res, 403, '방장만 다음 회차를 시작할 수 있습니다.');
       if (!room.round || room.round.phase !== 'result') return fail(res, 409, '현재 회차 결과가 아직 나오지 않았습니다.');
+      if (room.round.number >= 5) return fail(res, 409, '게임은 5회차까지 진행할 수 있습니다.');
       if (!conditions[data.condition]) return fail(res, 400, '실험 조건을 확인해 주세요.');
       room.round = { number: room.nextNumber++, condition: data.condition, phase: 'playing', submissions: new Map() };
     }
