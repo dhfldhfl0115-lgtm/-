@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>협력 게임 실험</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,"Malgun Gothic",sans-serif;color:#17202a;background:#f4f6f8}*{box-sizing:border-box}body{margin:0;padding:22px}main{max-width:760px;margin:auto}h1{margin:0 0 6px;font-size:1.65rem}h2{font-size:1.15rem;margin:0 0 14px}.muted{color:#52606d;line-height:1.5}.card{background:white;border:1px solid #dce2e8;border-radius:10px;padding:18px;margin:15px 0}.row{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.field{flex:1;min-width:180px}label{display:block;font-weight:600;margin-bottom:6px}input,select,button{font:inherit}input,select{width:100%;border:1px solid #b9c3cc;border-radius:6px;padding:10px;background:white}button{border:0;border-radius:6px;background:#155eef;color:white;padding:10px 15px;cursor:pointer}button.secondary{background:#344054}button:disabled{opacity:.5;cursor:not-allowed}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.hidden{display:none!important}.error{color:#b42318;min-height:1.4em;font-weight:600}.room{font-size:1.5rem;letter-spacing:.12em;font-weight:750}.list{padding-left:22px;line-height:1.8}.notice{background:#eff6ff;border-left:4px solid #155eef;padding:11px;border-radius:4px}.stats{display:flex;gap:18px;flex-wrap:wrap}.stats strong{font-size:1.25rem}.status{font-weight:650}.pill{display:inline-block;border-radius:99px;background:#eef2ff;padding:4px 10px;font-size:.85rem}table{border-collapse:collapse;width:100%;margin-top:10px}th,td{text-align:left;border-bottom:1px solid #e4e7ec;padding:9px 7px}small{color:#667085}@media(max-width:560px){body{padding:13px}}
+  </style>
+</head>
+<body><main>
+  <h1>협력 게임 실험</h1><p class="muted">방을 만들고 친구 네 명이 각자 기기에서 참여합니다.</p>
+  <section id="entry" class="card"><h2>참여 방법</h2>
+    <div class="row"><div class="field"><label for="name">내 이름</label><input id="name" maxlength="30" placeholder="이름"></div></div>
+    <div class="actions"><button id="makeRoom">새 방 만들기 (진행자)</button></div>
+    <hr style="border:0;border-top:1px solid #e4e7ec;margin:18px 0">
+    <div class="row"><div class="field"><label for="roomCode">방 코드</label><input id="roomCode" maxlength="6" placeholder="예: A3K9QW" autocapitalize="characters"></div><button id="joinRoom" class="secondary">참가하기</button></div>
+  </section>
+  <section id="game" class="hidden">
+    <section class="card"><div class="row" style="justify-content:space-between"><div><h2 id="roomTitle">실험 방</h2><div>방 코드 <span id="code" class="room"></span></div></div><span id="role" class="pill"></span></div><p id="roomMessage" class="muted"></p></section>
+    <section id="lobby" class="card"><h2>참가자</h2><ol id="players" class="list"></ol><div id="hostControls" class="hidden"><div class="row"><div class="field"><label for="condition">첫 회차 조건</label><select id="condition"><option value="A">A — 비공개 · 보너스 없음</option><option value="B">B — 공개 · 보너스 없음</option><option value="C">C — 비공개 · 보너스 있음</option><option value="D">D — 공개 · 보너스 있음</option></select></div><button id="start">실험 시작</button></div></div><p id="waiting" class="muted"></p></section>
+    <section id="round" class="card hidden"><div class="row" style="justify-content:space-between"><h2 id="roundTitle">1회차</h2><span id="conditionBadge" class="pill"></span></div><p id="roundHelp" class="muted"></p><div id="liveChoices"></div><div id="choiceBox" class="row"><div class="field"><label for="contribution">내 기여량 (0–10)</label><input id="contribution" type="number" min="0" max="10" step="1" value="0"></div><button id="submit">기여 제출</button></div><p id="submitted" class="status"></p></section>
+    <section id="result" class="card hidden"><h2>회차 결과</h2><div id="resultStats" class="stats"></div><p id="myScore" class="notice"></p><div id="resultTable"></div><div id="nextControls" class="hidden"><div class="row"><div class="field"><label for="nextCondition">다음 회차 조건</label><select id="nextCondition"><option value="A">A — 비공개 · 보너스 없음</option><option value="B">B — 공개 · 보너스 없음</option><option value="C">C — 비공개 · 보너스 있음</option><option value="D">D — 공개 · 보너스 있음</option></select></div><button id="next">다음 회차 시작</button></div></div><p id="waitingNext" class="muted"></p></section>
+    <section id="historyCard" class="card hidden"><div class="row" style="justify-content:space-between"><h2>완료된 회차</h2><button id="export" class="secondary hidden">기록 CSV 저장</button></div><div id="history"></div></section>
+  </section>
+  <p id="error" class="error" role="alert"></p>
+  <section class="card"><p class="notice"><strong>규칙:</strong> R = 1.5 × 전체 기여 S ÷ 4. 최종 점수 = 10 − 내 기여 + R + 보너스. C·D 조건에서 S ≥ 24이면 각자 3점 보너스를 받습니다.</p><small>이 프로토타입은 서버가 실행 중인 동안만 방과 기록을 보관합니다.</small></section>
+</main>
+<script>
+(() => {
+  const $=id=>document.getElementById(id), labels={A:'A — 비공개 · 보너스 없음',B:'B — 공개 · 보너스 없음',C:'C — 비공개 · 보너스 있음',D:'D — 공개 · 보너스 있음'};
+  let session=null, timer=null, lastRound=-1;
+  async function api(path,data){const res=await fetch(path,{method:data?'POST':'GET',headers:{'Content-Type':'application/json',...(data?{}:{})},body:data?JSON.stringify(data):undefined});const json=await res.json();if(!res.ok)throw Error(json.error||'요청을 처리하지 못했습니다.');return json;}
+  function showError(s){$('error').textContent=s||''}
+  function begin(data,role){session={...data,role};sessionStorage.setItem('cooperation-game-session',JSON.stringify(session));$('entry').classList.add('hidden');$('game').classList.remove('hidden');$('code').textContent=data.code;$('role').textContent=role==='host'?'진행자': '참가자';if(timer)clearInterval(timer);refresh();timer=setInterval(refresh,1200)}
+  async function make(){showError('');try{const d=await api('/api/rooms',{name:$('name').value.trim()||'진행자'});begin(d,'host')}catch(e){showError(e.message)}}
+  async function join(){showError('');try{const d=await api('/api/join',{code:$('roomCode').value.trim().toUpperCase(),name:$('name').value.trim()});begin(d,'player')}catch(e){showError(e.message)}}
+  async function refresh(){if(!session)return;try{const s=await api(`/api/room?code=${encodeURIComponent(session.code)}&token=${encodeURIComponent(session.token)}`);render(s)}catch(e){showError(e.message);clearInterval(timer)}}
+  function render(s){
+    $('players').innerHTML=s.players.map(p=>`<li>${esc(p.name)}</li>`).join('');
+    const history=s.history||[];$('historyCard').classList.toggle('hidden',history.length===0);$('export').classList.toggle('hidden',session.role!=='host'||history.length===0);
+    $('history').innerHTML=history.length?`<table><thead><tr><th>회차</th><th>조건</th><th>전체 기여 S</th><th>공유 반환 R</th><th>개인 결과</th></tr></thead><tbody>${history.map(r=>`<tr><td>${r.number}</td><td>${r.condition}</td><td>${r.total}</td><td>${fmt(r.returned)}</td><td>${r.players.map(p=>`${esc(p.name)}: ${p.contribution===null?'기여 비공개':p.contribution+' / '+fmt(p.score)+'점'}`).join(' · ')}</td></tr>`).join('')}</tbody></table>`:'<p class="muted">아직 완료된 회차가 없습니다.</p>';
+    const lobby=s.phase==='lobby';$('lobby').classList.toggle('hidden',!lobby);$('round').classList.toggle('hidden',s.phase!=='playing');$('result').classList.toggle('hidden',s.phase!=='result');
+    if(lobby){$('hostControls').classList.toggle('hidden',session.role!=='host');$('waiting').textContent=session.role==='host'?(s.players.length<4?'참가자가 네 명 모이면 시작할 수 있습니다.':'네 명이 모두 모였습니다. 조건을 선택하고 시작하세요.'):`진행자가 실험을 시작하기를 기다리는 중입니다. (${s.players.length}/4)`; $('start').disabled=s.players.length!==4;return}
+    if(s.phase==='playing'){
+      $('roundTitle').textContent=`${s.round.number}회차`;$('conditionBadge').textContent=labels[s.round.condition];
+      $('roundHelp').textContent=s.round.public?'공개 조건입니다. 제출한 기여량은 모든 참가자에게 표시됩니다.':'비공개 조건입니다. 다른 참가자는 각자의 기여량을 볼 수 없습니다.';
+      $('liveChoices').innerHTML=s.round.public?`<p class="muted">제출 현황: ${s.round.submissions.map(x=>`${esc(x.name)}: ${x.value===null?'미제출':x.value}`).join(' · ')}</p>`:`<p class="muted">제출 완료 ${s.round.submittedCount}/4명</p>`;
+      const mine=s.round.mineSubmitted;$('choiceBox').classList.toggle('hidden',mine);$('submitted').textContent=mine?'제출했습니다. 다른 참가자를 기다리는 중입니다.':'';return;
+    }
+    $('round').classList.add('hidden');$('result').classList.remove('hidden');
+    if(lastRound!==s.round.number){$('nextCondition').value=s.round.condition;lastRound=s.round.number}
+    $('resultStats').innerHTML=`<span>전체 기여 S<br><strong>${s.round.total}</strong></span><span>공유 반환 R<br><strong>${fmt(s.round.returned)}</strong></span><span>팀 보너스<br><strong>${s.round.bonus?'각 3점':'없음'}</strong></span>`;
+    $('myScore').classList.toggle('hidden',session.role==='host');$('myScore').textContent=`내 최종 점수: ${fmt(s.round.myScore)}점`;
+    $('resultTable').innerHTML=s.round.public?`<table><thead><tr><th>참가자</th><th>기여량</th><th>최종 점수</th></tr></thead><tbody>${s.round.players.map(p=>`<tr><td>${esc(p.name)}</td><td>${p.contribution}</td><td>${fmt(p.score)}</td></tr>`).join('')}</tbody></table>`:'<p class="muted">비공개 조건이라 개인별 기여량과 점수는 본인에게만 표시됩니다.</p>';
+    $('nextControls').classList.toggle('hidden',session.role!=='host');$('waitingNext').textContent=session.role==='player'?'진행자가 다음 회차를 시작하기를 기다리는 중입니다.':'';
+  }
+  $('makeRoom').onclick=make;$('joinRoom').onclick=join;
+  $('start').onclick=async()=>{try{await api('/api/start',{...session,condition:$('condition').value});showError('');refresh()}catch(e){showError(e.message)}};
+  $('submit').onclick=async()=>{const v=$('contribution').value;try{await api('/api/contribute',{...session,value:v});$('contribution').value='0';showError('');refresh()}catch(e){showError(e.message)}};
+  $('next').onclick=async()=>{try{await api('/api/next',{...session,condition:$('nextCondition').value});showError('');refresh()}catch(e){showError(e.message)}};
+  $('export').onclick=()=>{if(!session)return;api(`/api/history?code=${encodeURIComponent(session.code)}&token=${encodeURIComponent(session.token)}`).then(data=>{const rows=[['회차','조건','전체 기여 S','공유 반환 R','참가자','개인 기여','최종 점수']];data.history.forEach(r=>r.players.forEach(p=>rows.push([r.number,r.condition,r.total,r.returned,p.name,p.contribution,p.score])));const csv='\uFEFF'+rows.map(row=>row.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=`협력게임_${session.code}_기록.csv`;a.click();URL.revokeObjectURL(a.href)}).catch(e=>showError(e.message))};
+  $('roomCode').addEventListener('input',e=>e.target.value=e.target.value.toUpperCase());
+  function fmt(x){return Number(x).toFixed(2).replace(/\.00$/,'')}function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  try{const saved=JSON.parse(sessionStorage.getItem('cooperation-game-session')||'null');if(saved&&saved.code&&saved.token)begin(saved,saved.role)}catch{}
+})();
+</script></body></html>
