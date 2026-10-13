@@ -34,13 +34,13 @@ function validName(value, fallback) {
   return name || fallback;
 }
 function auth(room, key) {
-  if (room.hostToken === key) return { role: 'host' };
   const player = room.players.find(p => p.token === key);
-  return player ? { role: 'player', player } : null;
+  if (!player) return null;
+  return { role: player.id === room.hostId ? 'host' : 'player', player };
 }
 function completeRound(room) {
   const round = room.round;
-  if (round.phase !== 'playing' || round.submissions.size !== 4) return;
+  if (round.phase !== 'playing' || round.submissions.size !== room.players.length) return;
   const total = [...round.submissions.values()].reduce((sum, item) => sum + item.value, 0);
   const returned = 1.5 * total / 4;
   const bonus = conditions[round.condition].bonus && total >= 24 ? 3 : 0;
@@ -54,15 +54,15 @@ function completeRound(room) {
 function view(room, access) {
   const history = room.history.map(item => ({
     number: item.number, condition: item.condition, total: item.total, returned: item.returned, bonus: item.bonus,
-    players: access.role === 'host' || conditions[item.condition].public
+    players: conditions[item.condition].public
       ? item.players.map(p => ({ name: p.name, contribution: p.contribution, score: p.score }))
-      : [item.players.find(p => p.id === access.player?.id)].filter(Boolean).map(p => ({ name: p.name, contribution: null, score: p.score }))
+      : [item.players.find(p => p.id === access.player.id)].filter(Boolean).map(p => ({ name: p.name, contribution: null, score: p.score }))
   }));
   const result = { code: room.code, phase: room.round ? room.round.phase : 'lobby', players: room.players.map(p => ({ name: p.name })), round: null, history };
   if (!room.round) return result;
   const r = room.round;
   if (r.phase === 'playing') {
-    const own = access.role === 'player' ? r.submissions.get(access.player.id) : null;
+    const own = r.submissions.get(access.player.id);
     result.round = {
       number: r.number, condition: r.condition, public: conditions[r.condition].public,
       submittedCount: r.submissions.size, mineSubmitted: Boolean(own),
@@ -70,7 +70,7 @@ function view(room, access) {
     };
     return result;
   }
-  const mine = access.role === 'player' ? r.players.find(p => p.id === access.player.id) : null;
+  const mine = r.players.find(p => p.id === access.player.id);
   result.round = {
     number: r.number, condition: r.condition, public: conditions[r.condition].public,
     total: r.total, returned: r.returned, bonus: r.bonus,
@@ -82,8 +82,9 @@ function view(room, access) {
 
 async function handleApi(req, res, url) {
   if (req.method === 'POST' && url.pathname === '/api/rooms') {
-    const data = await readBody(req); const code = roomCode(); const hostToken = token();
-    const room = { code, hostToken, players: [], round: null, nextNumber: 1, history: [] };
+    const data = await readBody(req); const code = roomCode(); const hostToken = token(); const hostId = token();
+    const host = { id: hostId, token: hostToken, name: validName(data.name, '방장') };
+    const room = { code, hostToken, hostId, players: [host], round: null, nextNumber: 1, history: [] };
     rooms.set(code, room);
     return json(res, 201, { code, token: hostToken });
   }
@@ -91,7 +92,7 @@ async function handleApi(req, res, url) {
     const data = await readBody(req); const code = String(data.code || '').trim().toUpperCase(); const room = rooms.get(code);
     if (!room) return fail(res, 404, '방을 찾을 수 없습니다. 코드를 확인해 주세요.');
     if (room.round) return fail(res, 409, '이미 시작된 방에는 참가할 수 없습니다.');
-    if (room.players.length >= 4) return fail(res, 409, '참가자가 이미 네 명입니다.');
+    if (room.players.length >= 4) return fail(res, 409, '방장 포함 최대 네 명까지 참가할 수 있습니다.');
     const player = { id: token(), token: token(), name: validName(data.name, `참가자 ${room.players.length + 1}`) };
     room.players.push(player);
     return json(res, 201, { code, token: player.token });
@@ -108,8 +109,7 @@ async function handleApi(req, res, url) {
     if (!room) return fail(res, 404, '방을 찾을 수 없습니다.');
     const access = auth(room, url.searchParams.get('token'));
     if (!access) return fail(res, 403, '이 방에 접근할 수 없습니다.');
-    if (access.role !== 'host') return fail(res, 403, '기록 내보내기는 진행자만 할 수 있습니다.');
-    return json(res, 200, { history: room.history });
+    return json(res, 200, { history: view(room, access).history });
   }
   if (req.method === 'POST' && ['/api/start', '/api/contribute', '/api/next'].includes(url.pathname)) {
     const data = await readBody(req); const room = rooms.get(String(data.code || '').toUpperCase());
@@ -117,19 +117,18 @@ async function handleApi(req, res, url) {
     const access = auth(room, data.token);
     if (!access) return fail(res, 403, '이 방에 접근할 수 없습니다.');
     if (url.pathname === '/api/start') {
-      if (access.role !== 'host') return fail(res, 403, '진행자만 실험을 시작할 수 있습니다.');
-      if (room.round || room.players.length !== 4) return fail(res, 409, '참가자 네 명이 모인 뒤 시작할 수 있습니다.');
+      if (access.role !== 'host') return fail(res, 403, '방장만 실험을 시작할 수 있습니다.');
+      if (room.round || room.players.length < 2) return fail(res, 409, '방장 포함 두 명 이상 모인 뒤 시작할 수 있습니다.');
       if (!conditions[data.condition]) return fail(res, 400, '실험 조건을 확인해 주세요.');
       room.round = { number: room.nextNumber++, condition: data.condition, phase: 'playing', submissions: new Map() };
     } else if (url.pathname === '/api/contribute') {
-      if (access.role !== 'player') return fail(res, 403, '참가자 계정으로 제출해 주세요.');
       if (!room.round || room.round.phase !== 'playing') return fail(res, 409, '현재 진행 중인 회차가 없습니다.');
       const value = Number(data.value);
       if (!Number.isInteger(value) || value < 0 || value > 10) return fail(res, 400, '기여량은 0부터 10 사이 정수여야 합니다.');
       if (room.round.submissions.has(access.player.id)) return fail(res, 409, '이미 기여량을 제출했습니다.');
       room.round.submissions.set(access.player.id, { value }); completeRound(room);
     } else {
-      if (access.role !== 'host') return fail(res, 403, '진행자만 다음 회차를 시작할 수 있습니다.');
+      if (access.role !== 'host') return fail(res, 403, '방장만 다음 회차를 시작할 수 있습니다.');
       if (!room.round || room.round.phase !== 'result') return fail(res, 409, '현재 회차 결과가 아직 나오지 않았습니다.');
       if (!conditions[data.condition]) return fail(res, 400, '실험 조건을 확인해 주세요.');
       room.round = { number: room.nextNumber++, condition: data.condition, phase: 'playing', submissions: new Map() };
@@ -158,5 +157,6 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`협력 게임 서버 실행 중: http://localhost:${PORT}`);
-  console.log('같은 Wi-Fi의 친구는 진행자 기기의 내부 IP 주소와 포트 3000으로 접속할 수 있습니다.');
+  console.log('같은 Wi-Fi의 친구는 방장 기기의 내부 IP 주소와 포트 3000으로 접속할 수 있습니다.');
 });
+
