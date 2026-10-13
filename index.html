@@ -6,6 +6,35 @@
   <style>
     :root{font-family:system-ui,-apple-system,"Malgun Gothic",sans-serif;color:#17202a;background:#f4f6f8}*{box-sizing:border-box}body{margin:0;padding:22px}main{max-width:760px;margin:auto}h1{margin:0 0 6px;font-size:1.65rem}h2{font-size:1.15rem;margin:0 0 14px}.muted{color:#52606d;line-height:1.5}.card{background:white;border:1px solid #dce2e8;border-radius:10px;padding:18px;margin:15px 0}.row{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.field{flex:1;min-width:180px}label{display:block;font-weight:600;margin-bottom:6px}input,select,button{font:inherit}input,select{width:100%;border:1px solid #b9c3cc;border-radius:6px;padding:10px;background:white}button{border:0;border-radius:6px;background:#155eef;color:white;padding:10px 15px;cursor:pointer}button.secondary{background:#344054}button:disabled{opacity:.5;cursor:not-allowed}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.hidden{display:none!important}.error{color:#b42318;min-height:1.4em;font-weight:600}.room{font-size:1.5rem;letter-spacing:.12em;font-weight:750}.list{padding-left:22px;line-height:1.8}.notice{background:#eff6ff;border-left:4px solid #155eef;padding:11px;border-radius:4px}.stats{display:flex;gap:18px;flex-wrap:wrap}.stats strong{font-size:1.25rem}.status{font-weight:650}.pill{display:inline-block;border-radius:99px;background:#eef2ff;padding:4px 10px;font-size:.85rem}table{border-collapse:collapse;width:100%;margin-top:10px}th,td{text-align:left;border-bottom:1px solid #e4e7ec;padding:9px 7px}small{color:#667085}@media(max-width:560px){body{padding:13px}}
   </style>
+  <style>
+    :root{color:#17243a;background:#f3f6fb}
+    body{min-height:100vh;padding:clamp(18px,4vw,48px);background:radial-gradient(ellipse at 12% 0%,#e4edff 0,transparent 34%),radial-gradient(ellipse at 92% 20%,#e6f8f3 0,transparent 28%),#f5f7fb}
+    main{max-width:820px}
+    h1{font-size:clamp(1.8rem,4vw,2.35rem);letter-spacing:-.045em;color:#13213a;margin-bottom:8px}
+    h1+p{font-size:1rem;margin:0 0 26px;color:#65728a}
+    h2{font-size:1.1rem;letter-spacing:-.02em;color:#202f49}
+    .card{border:1px solid rgba(213,222,235,.75);border-radius:18px;padding:clamp(18px,3vw,26px);margin:18px 0;background:rgba(255,255,255,.9);box-shadow:0 12px 32px rgba(30,48,79,.055)}
+    #entry{padding:clamp(20px,4vw,32px)}
+    .muted{color:#64738a}
+    label{font-size:.92rem;color:#35445e}
+    input,select{min-height:46px;border:1px solid #d4dce8;border-radius:10px;padding:11px 13px;color:#17243a;transition:border-color .15s,box-shadow .15s}
+    input:focus,select:focus{outline:none;border-color:#6489ed;box-shadow:0 0 0 4px rgba(79,112,220,.13)}
+    button{min-height:46px;border-radius:10px;padding:11px 17px;font-weight:650;background:linear-gradient(135deg,#426de0,#5c67d9);box-shadow:0 5px 12px rgba(66,109,224,.18);transition:transform .15s,filter .15s,box-shadow .15s}
+    button:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.04);box-shadow:0 8px 17px rgba(66,109,224,.2)}
+    button.secondary{background:#edf1f8;color:#34435d;box-shadow:none}
+    button.secondary:hover:not(:disabled){background:#e3eaf5;box-shadow:none}
+    button:disabled{box-shadow:none}
+    .row{gap:12px}
+    .actions{margin-top:16px}
+    .room{display:inline-block;margin-left:4px;color:#375ed0;font-size:1.65rem;letter-spacing:.14em}
+    .pill{background:#edf3ff;color:#3656a8;padding:6px 11px;font-weight:650}
+    .list{color:#34435d;line-height:2}
+    .error{margin:10px auto;max-width:820px}
+    table{font-size:.93rem}
+    th,td{padding:11px 9px;border-color:#edf0f5}
+    th{color:#66758c;font-size:.84rem;font-weight:650}
+    @media(max-width:560px){body{padding:18px 13px}h1+p{margin-bottom:20px}.card{border-radius:15px}}
+  </style>
 </head>
 <body><main>
   <h1>협력 게임 실험</h1><p class="muted">방을 만들고 친구 네 명이 각자 기기에서 참여합니다.</p>
@@ -23,7 +52,6 @@
     <section id="historyCard" class="card hidden"><div class="row" style="justify-content:space-between"><h2>완료된 회차</h2><button id="export" class="secondary hidden">기록 CSV 저장</button></div><div id="history"></div></section>
   </section>
   <p id="error" class="error" role="alert"></p>
-  <section class="card"><p class="notice"><strong>규칙:</strong> R = 1.5 × 전체 기여 S ÷ 4. 최종 점수 = 10 − 내 기여 + R + 보너스. C·D 조건에서 S ≥ 24이면 각자 3점 보너스를 받습니다.</p><small>이 프로토타입은 서버가 실행 중인 동안만 방과 기록을 보관합니다.</small></section>
 </main>
 <script>
 (() => {
@@ -64,3 +92,4 @@
   try{const saved=JSON.parse(sessionStorage.getItem('cooperation-game-session')||'null');if(saved&&saved.code&&saved.token)begin(saved,saved.role)}catch{}
 })();
 </script></body></html>
+
