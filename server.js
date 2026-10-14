@@ -153,8 +153,9 @@ async function handleApi(req, res, url) {
     if (!room) return fail(res, 404, '방을 찾을 수 없습니다.');
     const access = auth(room, url.searchParams.get('token'));
     if (!access) return fail(res, 403, '이 방에 접근할 수 없습니다.');
+    if (access.role !== 'host') return fail(res, 403, '게임을 만든 사람만 연구용 기록을 받을 수 있습니다.');
     access.player.lastSeen = Date.now();
-    return json(res, 200, { history: view(room, access).history });
+    return json(res, 200, { history: room.history });
   }
   if (req.method === 'POST' && ['/api/start', '/api/contribute', '/api/next'].includes(url.pathname)) {
     const data = await readBody(req); const room = rooms.get(String(data.code || '').toUpperCase());
