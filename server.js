@@ -93,6 +93,10 @@ function view(room, access) {
     };
     return result;
   }
+  if (r.phase === 'story') {
+    result.round = { number: r.number, condition: r.condition };
+    return result;
+  }
   const mine = r.players.find(p => p.id === access.player.id);
   result.round = {
     number: r.number, condition: r.condition, public: conditions[r.condition].public,
@@ -157,7 +161,7 @@ async function handleApi(req, res, url) {
     access.player.lastSeen = Date.now();
     return json(res, 200, { history: room.history });
   }
-  if (req.method === 'POST' && ['/api/start', '/api/contribute', '/api/next'].includes(url.pathname)) {
+  if (req.method === 'POST' && ['/api/start', '/api/story', '/api/contribute', '/api/next'].includes(url.pathname)) {
     const data = await readBody(req); const room = rooms.get(String(data.code || '').toUpperCase());
     if (!room) return fail(res, 404, '방을 찾을 수 없습니다.');
     const access = auth(room, data.token);
@@ -168,7 +172,11 @@ async function handleApi(req, res, url) {
       if (room.round || room.players.length < 2) return fail(res, 409, '방장 포함 두 명 이상 모인 뒤 시작할 수 있습니다.');
       if (!conditions[data.condition]) return fail(res, 400, '실험 조건을 확인해 주세요.');
       for (const player of room.players) { player.balance = 10; player.rewardScore = 0; }
-      room.round = { number: room.nextNumber++, condition: data.condition, phase: 'playing', submissions: new Map() };
+      room.round = { number: room.nextNumber, condition: data.condition, phase: 'story', submissions: new Map() };
+    } else if (url.pathname === '/api/story') {
+      if (access.role !== 'host') return fail(res, 403, '방장만 이야기를 끝내고 시작할 수 있습니다.');
+      if (!room.round || room.round.phase !== 'story') return fail(res, 409, '시작 이야기가 진행 중이 아닙니다.');
+      room.round.phase = 'playing'; room.nextNumber++;
     } else if (url.pathname === '/api/contribute') {
       if (!room.round || room.round.phase !== 'playing') return fail(res, 409, '현재 진행 중인 회차가 없습니다.');
       const value = Number(data.value);
