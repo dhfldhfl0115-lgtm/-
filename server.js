@@ -94,7 +94,7 @@ function view(room, access) {
     return result;
   }
   if (r.phase === 'story') {
-    result.round = { number: r.number, condition: r.condition };
+    result.round = { number: r.number, condition: r.condition, storyStep: r.storyStep };
     return result;
   }
   const mine = r.players.find(p => p.id === access.player.id);
@@ -172,11 +172,14 @@ async function handleApi(req, res, url) {
       if (room.round || room.players.length < 2) return fail(res, 409, '방장 포함 두 명 이상 모인 뒤 시작할 수 있습니다.');
       if (!conditions[data.condition]) return fail(res, 400, '실험 조건을 확인해 주세요.');
       for (const player of room.players) { player.balance = 10; player.rewardScore = 0; }
-      room.round = { number: room.nextNumber, condition: data.condition, phase: 'story', submissions: new Map() };
+      room.round = { number: room.nextNumber, condition: data.condition, phase: 'story', storyStep: 1, submissions: new Map() };
     } else if (url.pathname === '/api/story') {
       if (access.role !== 'host') return fail(res, 403, '방장만 이야기를 끝내고 시작할 수 있습니다.');
       if (!room.round || room.round.phase !== 'story') return fail(res, 409, '시작 이야기가 진행 중이 아닙니다.');
-      room.round.phase = 'playing'; room.nextNumber++;
+      if (data.action === 'previous') room.round.storyStep = Math.max(1, room.round.storyStep - 1);
+      else if (data.action === 'next' && room.round.storyStep < 3) room.round.storyStep++;
+      else if (data.action === 'next' || data.action === 'skip') { room.round.phase = 'playing'; room.nextNumber++; }
+      else return fail(res, 400, '이야기 버튼을 확인해 주세요.');
     } else if (url.pathname === '/api/contribute') {
       if (!room.round || room.round.phase !== 'playing') return fail(res, 409, '현재 진행 중인 회차가 없습니다.');
       const value = Number(data.value);
