@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>우리의 저금통</title>
+  <title>우주 탐사대</title>
   <style>
     :root{font-family:system-ui,-apple-system,"Malgun Gothic",sans-serif;color:#17202a;background:#f4f6f8}*{box-sizing:border-box}body{margin:0;padding:22px}main{max-width:760px;margin:auto}h1{margin:0 0 6px;font-size:1.65rem}h2{font-size:1.15rem;margin:0 0 14px}.muted{color:#52606d;line-height:1.5}.card{background:white;border:1px solid #dce2e8;border-radius:10px;padding:18px;margin:15px 0}.row{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.field{flex:1;min-width:180px}label{display:block;font-weight:600;margin-bottom:6px}input,select,button{font:inherit}input,select{width:100%;border:1px solid #b9c3cc;border-radius:6px;padding:10px;background:white}button{border:0;border-radius:6px;background:#155eef;color:white;padding:10px 15px;cursor:pointer}button.secondary{background:#344054}button:disabled{opacity:.5;cursor:not-allowed}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.hidden{display:none!important}.error{color:#b42318;min-height:1.4em;font-weight:600}.room{font-size:1.5rem;letter-spacing:.12em;font-weight:750}.list{padding-left:22px;line-height:1.8}.notice{background:#eff6ff;border-left:4px solid #155eef;padding:11px;border-radius:4px}.stats{display:flex;gap:18px;flex-wrap:wrap}.stats strong{font-size:1.25rem}.status{font-weight:650}.pill{display:inline-block;border-radius:99px;background:#eef2ff;padding:4px 10px;font-size:.85rem}table{border-collapse:collapse;width:100%;margin-top:10px}th,td{text-align:left;border-bottom:1px solid #e4e7ec;padding:9px 7px}small{color:#667085}@media(max-width:560px){body{padding:13px}}
   </style>
@@ -52,16 +52,16 @@
     .wallet-bank{border-color:#d7e1ef;background:linear-gradient(135deg,#f5f8ff,#fff);}
     .wallet-bank .coin-bank-icon{font-size:2.5rem}
     .shared-bank{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:14px;padding:18px;border:1px solid #f0d894;border-radius:16px;background:linear-gradient(135deg,#fff9e7,#fffdf6);margin:16px 0}
-    .shared-pig{position:relative;display:grid;place-items:center;width:92px;height:76px;border-radius:48% 48% 42% 42%;background:#ffd8c9;font-size:3.1rem;line-height:1;box-shadow:inset 0 -5px 0 #f3b9a4}
-    .shared-pig::before{content:"";position:absolute;top:12px;left:39px;width:18px;height:4px;border-radius:9px;background:#b97963}
-    .shared-pig::after{content:"🪙";position:absolute;top:-11px;right:2px;font-size:1.45rem;animation:coin-drop .75s ease-in-out infinite alternate}
+    .shared-pig{position:relative;display:grid;place-items:center;width:88px;height:88px;border:5px solid #8fdcf3;border-radius:50%;background:radial-gradient(circle at 40% 35%,#e7fbff,#77c8e8 68%,#4599ca);font-size:3rem;line-height:1;box-shadow:0 0 22px #57c7f466,inset 0 -5px 0 #4199c4}
+    .shared-pig::before{content:"";position:absolute;top:10px;left:31px;width:18px;height:4px;border-radius:9px;background:#34799c}
+    .shared-pig::after{content:"🔋";position:absolute;top:-14px;right:-8px;font-size:1.35rem;animation:coin-drop .75s ease-in-out infinite alternate}
     @keyframes coin-drop{from{transform:translateY(-4px) rotate(-8deg)}to{transform:translateY(4px) rotate(8deg)}}
     .shared-bank-title{margin:0 0 3px;color:#795c25;font-weight:700}
     .shared-bank-count{font-size:1.4rem;color:#7a5411;font-weight:750}
     .bank-meter{height:12px;margin-top:9px;overflow:hidden;border-radius:99px;background:#f2e7c7}
     .bank-meter-fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,#f6c34c,#e99c21);transition:width .35s ease}
     .bank-coins{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px;min-height:12px}
-    .bank-coin{width:13px;height:13px;border:1px solid #d9a323;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b5,#f3bd3b 70%)}
+    .bank-coin{position:relative;width:16px;height:10px;border:1px solid #3d9cbf;border-radius:3px;background:linear-gradient(135deg,#d8fbff,#5ac3e4)}.bank-coin::after{position:absolute;top:2px;right:-3px;width:2px;height:4px;border-radius:0 2px 2px 0;background:#3d9cbf;content:""}
     .bank-goal{margin:7px 0 0;color:#775a22;font-size:.9rem;font-weight:650}
     .choice-warning{margin:12px 0 0;padding:12px 14px;border-radius:12px;background:#fff4e8;color:#77451c;line-height:1.55;font-weight:600}
     .slider-wrap{flex:1;min-width:220px;direction:ltr}
@@ -95,7 +95,7 @@
   </style>
 </head>
 <body><main>
-  <div class="game-title"><span class="pig-icon" aria-hidden="true">🐷</span><div><h1>우리의 저금통</h1><p class="muted">친구들과 코인을 모으고, 함께 점수를 쌓아 보세요.</p></div></div>
+  <div class="game-title"><span class="pig-icon" aria-hidden="true">🚀</span><div><h1>우주 탐사대</h1><p class="muted">고장 난 엔진을 함께 고치고, 우주 탐사 임무를 완수해요.</p></div></div>
   <section id="entry" class="card"><h2>게임에 들어가기</h2>
     <div class="row"><div class="field"><label for="name">내 이름</label><input id="name" maxlength="30" placeholder="이름"></div></div>
     <div class="actions"><button id="makeRoom">새 게임 만들기</button></div>
@@ -104,16 +104,16 @@
   </section>
   <section id="game" class="hidden">
     <section class="card"><div class="row" style="justify-content:space-between"><div><h2 id="roomTitle">우리 게임</h2><div>게임 코드 <button id="copyCode" class="copy-code" type="button" aria-label="게임 코드 복사"><span id="code" class="room"></span><span id="copyStatus" aria-live="polite">복사</span></button></div></div><span id="role" class="pill"></span><button id="leaveRoom" class="secondary">나가기</button></div><p id="roomMessage" class="muted"></p></section>
-    <section id="lobby" class="card"><h2>함께하는 친구</h2><ol id="players" class="list"></ol><p class="muted">게임이 시작되면 각자 지갑에 코인 10개가 있어요. 저금한 코인은 지갑으로 돌아오지 않으니, 저금통에 넣을 만큼과 지갑에 남길 만큼을 생각해 보세요. 다섯 판을 함께 해봐요!</p><div id="hostControls" class="hidden"><div class="row"><div class="field"><label for="condition">첫 판 분위기</label><select id="condition"><option value="A">조용히 모으기 · 목표 선물 없음</option><option value="B">서로 보여주며 모으기 · 목표 선물 없음</option><option value="C">조용히 모으기 · 목표 선물 있음</option><option value="D">서로 보여주며 모으기 · 목표 선물 있음</option></select></div><button id="start">게임 시작</button></div></div><p id="waiting" class="muted"></p></section>
+    <section id="lobby" class="card"><h2>함께하는 친구</h2><ol id="players" class="list"></ol><p class="muted">게임이 시작되면 각자 지갑에 에너지 셀 10개가 있어요. 에너지 셀은 항해·통신·생명 유지 장치에도 쓰이는 귀한 자원이에요. 엔진에 투입한 셀은 다시 쓸 수 없으니, 지갑에 남길 양도 생각해 보세요.</p><div id="hostControls" class="hidden"><div class="row"><div class="field"><label for="condition">첫 임무 조건</label><select id="condition"><option value="A">비공개 선택 · 임무 보너스 없음</option><option value="B">공개 선택 · 임무 보너스 없음</option><option value="C">비공개 선택 · 임무 보너스 있음</option><option value="D">공개 선택 · 임무 보너스 있음</option></select></div><button id="start">게임 시작</button></div></div><p id="waiting" class="muted"></p></section>
     <section id="story" class="card hidden"><h2>시작 이야기</h2><div id="storyStage" class="story-stage"><div id="storyArt" class="story-art" aria-hidden="true"></div><p id="storyKicker" class="story-kicker"></p><h3 id="storyHeading"></h3><p id="storyCopy" class="story-copy"></p></div><div id="storyProgress" class="story-progress" aria-label="이야기 진행 상황"></div><div class="story-controls"><p id="storyWaiting" class="muted"></p><div id="storyHostControls" class="actions hidden"><button id="storyPrevious" class="secondary">이전</button><button id="storyContinue">다음</button><button id="storySkip" class="secondary">건너뛰기</button></div></div></section>
-    <section id="round" class="card hidden"><div class="row" style="justify-content:space-between"><h2 id="roundTitle">1번째 판</h2><span id="conditionBadge" class="pill"></span></div><div id="roundProgress" class="round-progress" aria-label="다섯 판 중 진행 상황"></div><p id="roundHelp" class="muted"></p><div id="liveChoices"></div><div class="shared-bank"><div class="shared-pig" aria-hidden="true">🐷</div><div><p class="shared-bank-title">우리 저금통</p><div class="shared-bank-count"><span id="sharedAmount">0</span><span id="sharedUnit"> 코인</span></div><div class="bank-meter" role="progressbar" aria-label="선물 목표까지 모은 코인" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0"><div id="bankMeterFill" class="bank-meter-fill" style="width:0%"></div></div><div id="bankCoins" class="bank-coins" aria-hidden="true"></div><p id="bankGoal" class="bank-goal"></p></div></div><div class="coin-bank wallet-bank"><span class="coin-bank-icon" aria-hidden="true">👛</span><div><p class="coin-bank-label">내 지갑</p><strong><span id="balanceAmount">10</span> 코인</strong><div id="coinDots" class="coin-dots" aria-hidden="true"></div></div></div><p id="scoreStatus" class="status"></p><div id="choiceBox"><label for="contribution">이번에 저금할 코인</label><div class="row"><div class="slider-wrap"><input id="contribution" class="coin-slider" type="range" min="0" max="10" step="1" value="0"><div class="slider-labels" aria-hidden="true"><span>0</span><span id="sliderMaxLabel">10</span></div></div><span class="coin-choice"><span id="contributionValue">0</span> 코인</span><button id="submit">저금하기</button></div><p class="choice-warning">코인을 더 넣으면 우리 저금통에는 더 쌓이지만, 그만큼 내 지갑에 남는 코인이 줄어요. 넣은 코인은 다시 꺼낼 수 없으니 지갑에 남길 코인도 생각해서 골라 보세요.</p></div><p id="walletEmptyWarning" class="choice-warning hidden">지갑에 코인이 없어요. 이번 판은 0코인으로 자동 선택했어요.</p><p id="submitted" class="status"></p></section>
-    <section id="result" class="card hidden"><h2 id="resultTitle">이번 판 결과</h2><p id="resultRound" class="muted"></p><div class="shared-bank"><div class="shared-pig" aria-hidden="true">🐷</div><div><p class="shared-bank-title">우리 저금통</p><div class="shared-bank-count"><span id="resultSharedAmount">0</span><span id="resultSharedUnit"> 코인</span></div><div class="bank-meter" role="progressbar" aria-label="선물 목표까지 모은 코인" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0"><div id="resultBankMeterFill" class="bank-meter-fill" style="width:0%"></div></div><div id="resultBankCoins" class="bank-coins" aria-hidden="true"></div><p id="resultBankGoal" class="bank-goal"></p></div></div><div id="resultStats" class="stats"></div><p id="myScore" class="notice"></p><p id="resultMessage" class="muted"></p><div id="nextControls" class="hidden"><div class="row"><div class="field"><label for="nextCondition">다음 판 분위기</label><select id="nextCondition"><option value="A">조용히 모으기 · 목표 선물 없음</option><option value="B">서로 보여주며 모으기 · 목표 선물 없음</option><option value="C">조용히 모으기 · 목표 선물 있음</option><option value="D">서로 보여주며 모으기 · 목표 선물 있음</option></select></div><button id="next">다음 판 시작</button></div></div><p id="waitingNext" class="muted"></p><div id="gameFinished" class="hidden"><p class="final-message">다섯 판을 모두 모았어요! 🐷</p><div class="final-actions"><button id="export" class="secondary hidden">연구용 CSV 받기</button><button id="returnHome">메인 화면으로</button></div></div></section>
+    <section id="round" class="card hidden"><div class="row" style="justify-content:space-between"><h2 id="roundTitle">1번째 판</h2><span id="conditionBadge" class="pill"></span></div><div id="roundProgress" class="round-progress" aria-label="다섯 판 중 진행 상황"></div><p id="roundHelp" class="muted"></p><div id="liveChoices"></div><div class="shared-bank"><div class="shared-pig" aria-hidden="true">⚙️</div><div><p class="shared-bank-title">공동 엔진</p><div class="shared-bank-count"><span id="sharedAmount">0</span><span id="sharedUnit"> 에너지 셀</span></div><div class="bank-meter" role="progressbar" aria-label="임무 보너스 목표까지 모은 에너지 셀" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0"><div id="bankMeterFill" class="bank-meter-fill" style="width:0%"></div></div><div id="bankCoins" class="bank-coins" aria-hidden="true"></div><p id="bankGoal" class="bank-goal"></p></div></div><div class="coin-bank wallet-bank"><span class="coin-bank-icon" aria-hidden="true">👛</span><div><p class="coin-bank-label">내 지갑의 에너지 셀</p><strong><span id="balanceAmount">10</span>개</strong><div id="coinDots" class="coin-dots" aria-hidden="true"></div></div></div><p id="scoreStatus" class="status"></p><div id="choiceBox"><label for="contribution">이번에 엔진에 투입할 에너지 셀</label><div class="row"><div class="slider-wrap"><input id="contribution" class="coin-slider" type="range" min="0" max="10" step="1" value="0"><div class="slider-labels" aria-hidden="true"><span>0</span><span id="sliderMaxLabel">10</span></div></div><span class="coin-choice"><span id="contributionValue">0</span>개</span><button id="submit">엔진에 투입</button></div><p class="choice-warning">에너지 셀을 더 투입하면 공동 엔진은 더 충전되지만, 내 지갑에는 그만큼 적게 남아요. 엔진에 넣은 셀은 다시 꺼낼 수 없고 다른 장비에도 쓸 수 없으니 신중하게 골라요.</p></div><p id="walletEmptyWarning" class="choice-warning hidden">지갑에 에너지 셀이 없어요. 이번 판은 0개로 자동 선택했어요.</p><p id="submitted" class="status"></p></section>
+    <section id="result" class="card hidden"><h2 id="resultTitle">이번 판 결과</h2><p id="resultRound" class="muted"></p><div class="shared-bank"><div class="shared-pig" aria-hidden="true">⚙️</div><div><p class="shared-bank-title">공동 엔진</p><div class="shared-bank-count"><span id="resultSharedAmount">0</span><span id="resultSharedUnit"> 에너지 셀</span></div><div class="bank-meter" role="progressbar" aria-label="임무 보너스 목표까지 모은 에너지 셀" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0"><div id="resultBankMeterFill" class="bank-meter-fill" style="width:0%"></div></div><div id="resultBankCoins" class="bank-coins" aria-hidden="true"></div><p id="resultBankGoal" class="bank-goal"></p></div></div><div id="resultStats" class="stats"></div><p id="myScore" class="notice"></p><p id="resultMessage" class="muted"></p><div id="nextControls" class="hidden"><div class="row"><div class="field"><label for="nextCondition">다음 임무 조건</label><select id="nextCondition"><option value="A">비공개 선택 · 임무 보너스 없음</option><option value="B">공개 선택 · 임무 보너스 없음</option><option value="C">비공개 선택 · 임무 보너스 있음</option><option value="D">공개 선택 · 임무 보너스 있음</option></select></div><button id="next">다음 임무 시작</button></div></div><p id="waitingNext" class="muted"></p><div id="gameFinished" class="hidden"><p class="final-message">우주 탐사 임무 완료! 🚀</p><div class="final-actions"><button id="export" class="secondary hidden">연구용 CSV 받기</button><button id="returnHome">메인 화면으로</button></div></div></section>
   </section>
   <p id="error" class="error" role="alert"></p>
 </main>
 <script>
 (() => {
-  const $=id=>document.getElementById(id), labels={A:'조용히 모으기',B:'함께 보여주기',C:'조용히 모으기 · 선물',D:'함께 보여주기 · 선물'};
+  const $=id=>document.getElementById(id), labels={A:'비공개 선택',B:'공개 선택',C:'비공개 선택 · 임무 보너스',D:'공개 선택 · 임무 보너스'};
   let session=null, timer=null, lastRound=-1, autoZeroKey=null, lastStoryScene='';
   async function api(path,data){const res=await fetch(path,{method:data?'POST':'GET',headers:{'Content-Type':'application/json',...(data?{}:{})},body:data?JSON.stringify(data):undefined});const json=await res.json();if(!res.ok){const error=Error(json.error||'요청을 처리하지 못했습니다.');error.status=res.status;throw error}return json;}
   function showError(s){$('error').textContent=s||''}
@@ -130,9 +130,9 @@
     if(s.phase==='story'){renderStory(s);return} else lastStoryScene='';
     if(s.phase==='playing'){
       $('roundTitle').textContent=`${s.round.number}번째 판`;$('conditionBadge').textContent=labels[s.round.condition];
-      $('roundHelp').textContent=s.round.public?'이번에 넣는 코인은 친구들에게 보여요.':'이번에 넣는 코인은 친구들에게 보이지 않아요.';
+      $('roundHelp').textContent=s.round.public?'이번에 엔진에 넣는 에너지 셀 수가 친구들에게 보여요.':'이번에 엔진에 넣는 에너지 셀 수는 친구들에게 보이지 않아요.';
       $('roundProgress').innerHTML=Array.from({length:5},(_,i)=>`<span class="round-step${i<s.round.number?' done':''}"></span>`).join('');
-      $('liveChoices').innerHTML=s.round.public?`<p class="muted">${s.round.submissions.map(x=>`${esc(x.name)}: ${x.value===null?'고르는 중':x.value+' 코인'}`).join('　·　')}</p>`:`<p class="muted">친구들이 코인을 고르고 있어요. (${s.round.submittedCount}/${s.players.length})</p>`;
+      $('liveChoices').innerHTML=s.round.public?`<p class="muted">${s.round.submissions.map(x=>`${esc(x.name)}: ${x.value===null?'고르는 중':x.value+'개'}`).join('　·　')}</p>`:`<p class="muted">대원들이 에너지 셀을 고르고 있어요. (${s.round.submittedCount}/${s.players.length})</p>`;
       const balance=Number(s.round.myBalance);$('balanceAmount').textContent=balance;$('coinDots').innerHTML=Array.from({length:10},(_,i)=>`<span class="coin-dot${i<balance?' available':''}"></span>`).join('');
       const hasGift=s.round.condition==='C'||s.round.condition==='D';
       const knownTotal=s.round.public?s.round.submissions.reduce((sum,x)=>sum+(x.value??0),0):null;
@@ -140,7 +140,7 @@
       const mine=s.round.mineSubmitted,slider=$('contribution');slider.max=balance;slider.value=Math.min(Number(slider.value),balance);$('sliderMaxLabel').textContent=balance;updateSliderValue();
       $('scoreStatus').textContent=`내 점수 ${fmt(s.round.myScore)}점`;
       $('choiceBox').classList.toggle('hidden',mine||balance===0);$('walletEmptyWarning').classList.toggle('hidden',balance!==0||mine);
-      $('submitted').textContent=mine?(balance===0?'지갑에 코인이 없어 0코인으로 선택했어요. 친구들을 기다리는 중이에요.':'코인을 넣었어요! 친구들을 기다리는 중이에요.'):'';
+      $('submitted').textContent=mine?(balance===0?'지갑에 에너지 셀이 없어 0개로 자동 선택했어요. 대원들을 기다리는 중이에요.':'에너지 셀을 엔진에 투입했어요! 대원들을 기다리는 중이에요.'):'';
       if(balance===0&&!mine){const key=`${session.code}:${s.round.number}`;if(autoZeroKey!==key){autoZeroKey=key;api('/api/contribute',{...session,value:0}).then(()=>{showError('');refresh()}).catch(e=>{autoZeroKey=null;showError(e.message)})}}
       return;
     }
@@ -150,17 +150,17 @@
     $('resultTitle').textContent=s.round.finished?'마지막 판 결과':'이번 판 결과';
     const hasGift=s.round.condition==='C'||s.round.condition==='D';
     updateSharedBank(s.round.total,hasGift,s.round.bonus);
-    $('resultStats').innerHTML=`<span class="result-stat">친구들과 함께 넣었어요<strong>${s.round.total} 코인</strong></span><span class="result-stat">목표 선물<strong>${s.round.bonus?'받았어요!':'이번엔 없어요'}</strong></span>`;
-    $('myScore').classList.remove('hidden');$('myScore').textContent=`내 점수 ${fmt(s.round.myScore)}점　·　내 지갑에 ${s.round.myBalance} 코인 남음`;
-    $('resultMessage').textContent=s.round.public?'친구들의 선택이 모두 모였어요!': '이번 판 결과가 나왔어요. 내 점수와 저금통을 확인해 보세요.';
+    $('resultStats').innerHTML=`<span class="result-stat">공동 엔진에 모였어요<strong>${s.round.total}개</strong></span><span class="result-stat">임무 보너스<strong>${s.round.bonus?'받았어요!':'이번엔 없어요'}</strong></span>`;
+    $('myScore').classList.remove('hidden');$('myScore').textContent=`내 점수 ${fmt(s.round.myScore)}점　·　내 지갑에 에너지 셀 ${s.round.myBalance}개 남음`;
+    $('resultMessage').textContent=s.round.public?'대원들의 선택이 모두 모였어요!': '이번 판 결과가 나왔어요. 내 점수와 공동 엔진을 확인해 보세요.';
     $('nextControls').classList.toggle('hidden',session.role!=='host'||s.round.finished);$('waitingNext').textContent=session.role==='player'&&!s.round.finished?'게임 만든 친구가 다음 판을 준비하고 있어요.':'';$('gameFinished').classList.toggle('hidden',!s.round.finished);$('export').classList.toggle('hidden',session.role!=='host');
   }
   function renderStory(s){
     const step=Math.max(1,Math.min(3,Number(s.round.storyStep)||1)),gift=s.round.condition==='C'||s.round.condition==='D';
     const scenes=[
-      {heading:'마을에 커다란 저금통이 도착했어요!',copy:'친구들이 힘을 모으면 저금통을 함께 채울 수 있어요.',art:'<span class="story-emoji">🏘️</span><span class="story-emoji">🐷</span><span class="story-emoji">✨</span>'},
-      {heading:'내 지갑에는 코인 10개가 있어요.',copy:'저금통에 넣은 코인은 내 지갑에서 빠져나가 다시 쓸 수 없어요. 몇 개를 넣을지는 내가 정해요.',art:'<span class="story-emoji">👛</span><span class="story-coins">🪙🪙🪙<br>🪙🪙🪙</span><span class="story-emoji">🤔</span>'},
-      {heading:gift?'친구들과 24코인을 모으면 선물을 받아요.':'이번 판에는 선물 목표가 없어요.',copy:gift?'더 많이 넣으면 저금통은 채워지지만, 내 지갑에는 그만큼 적게 남아요. 신중하게 골라요.':'넣은 코인은 지갑으로 돌아오지 않아요. 내 지갑에 남길 코인을 생각해서 골라요.',art:'<span class="story-emoji">👫</span><span class="story-arrow">➜</span><span class="story-emoji">🐷</span><span class="story-emoji">🎁</span>'}
+      {heading:'탐사 임무 중, 우주선 엔진이 고장 났어요!',copy:`대원 ${s.players.length}명이 임무를 수행하던 중이에요. 엔진을 고쳐야 우주선을 더 멀리 움직일 수 있어요.`,art:'<span class="story-emoji">🧑‍🚀</span><span class="story-emoji">🚀</span><span class="story-emoji">⚠️</span>'},
+      {heading:'각 대원은 에너지 셀 10개를 가지고 있어요.',copy:'에너지 셀은 엔진뿐 아니라 항해 장치, 통신기, 생명 유지 장치에도 쓰이는 귀한 자원이에요. 가지고 있으면 여러 곳에 쓸 수 있어요.',art:'<span class="story-emoji">👛</span><span class="story-coins">🔋🔋🔋<br>🔋🔋🔋</span><span class="story-emoji">🛰️</span><span class="story-emoji">📡</span>'},
+      {heading:gift?'엔진에 24개를 모으면 모두 임무 성공 보너스!':'얼마나 엔진에 보탤지 대원마다 선택해요.',copy:gift?'공동 엔진에 에너지 셀을 넣으면 우주선은 더 멀리 가고 모두 보너스를 받아요. 다만 넣은 셀은 다른 장비에 다시 쓸 수 없으니 지갑에 남길 양도 생각해요.':'엔진에 에너지 셀을 넣으면 우주선은 더 멀리 가요. 하지만 넣은 셀은 다시 꺼내 다른 장비에 쓸 수 없으니 지갑에 남길 양도 생각해요.',art:'<span class="story-emoji">🧑‍🚀</span><span class="story-arrow">➜</span><span class="story-emoji">⚙️</span><span class="story-emoji">🌌</span>'}
     ];
     const key=`${session.code}:${step}`;
     if(lastStoryScene!==key){const scene=scenes[step-1],stage=$('storyStage');$('storyArt').innerHTML=scene.art;$('storyKicker').textContent=`이야기 ${step} / 3`;$('storyHeading').textContent=scene.heading;$('storyCopy').textContent=scene.copy;$('storyProgress').innerHTML=scenes.map((_,i)=>`<span class="story-dot${i+1===step?' active':''}"></span>`).join('');stage.classList.remove('animate');void stage.offsetWidth;stage.classList.add('animate');lastStoryScene=key}
@@ -173,11 +173,11 @@
       const id=suffix=>$(prefix?prefix+suffix:suffix[0].toLowerCase()+suffix.slice(1));
       const amount=id('SharedAmount'),unit=id('SharedUnit'),fill=id('BankMeterFill'),coins=id('BankCoins'),goal=id('BankGoal');
       if(!amount||!unit||!fill||!coins||!goal)continue;
-      amount.textContent=known?shown:'모으는 중';unit.textContent=known?' 코인':'';
+      amount.textContent=known?shown:'모으는 중';unit.textContent=known?'개':'';
       fill.style.width=hasGift?`${progress/24*100}%`:'0%';
       fill.parentElement.classList.toggle('hidden',!hasGift);fill.parentElement.setAttribute('aria-valuenow',String(progress));
       coins.innerHTML=Array.from({length:Math.min(progress,24)},()=>'<span class="bank-coin"></span>').join('');
-      goal.textContent=hasGift?(gotGift===undefined?(known?`선물까지 ${Math.max(0,24-shown)}코인 남았어요. 목표는 24코인이에요.`:'친구들의 선택이 모이면 저금통을 확인할 수 있어요. 목표는 24코인이에요.'):(gotGift?'목표 24코인을 모아 선물을 받았어요!':'이번에는 목표 24코인에 도달하지 못했어요.')):'이번 판에는 목표 선물이 없어요.';
+      goal.textContent=hasGift?(gotGift!==undefined?(gotGift?'에너지 셀 24개를 모아 임무 보너스를 받았어요!':'이번에는 24개 목표에 도달하지 못했어요.'):known?`임무 보너스까지 ${Math.max(0,24-shown)}개 남았어요. 목표는 24개예요.`:'대원들의 선택이 모이면 엔진 충전량을 확인할 수 있어요. 임무 보너스 목표는 24개예요.'):'이번 판에는 임무 보너스 목표가 없어요.';
     }
   }
   $('makeRoom').onclick=make;$('joinRoom').onclick=join;
