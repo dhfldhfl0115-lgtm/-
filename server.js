@@ -63,6 +63,8 @@ function completeRound(room) {
   const round = room.round;
   if (round.phase !== 'playing' || round.submissions.size !== room.players.length) return;
   const total = [...round.submissions.values()].reduce((sum, item) => sum + item.value, 0);
+  room.engineTotal += total;
+  const cumulativeTotal = room.engineTotal;
   const returned = 1.5 * total / 4;
   const bonus = conditions[round.condition].bonus && total >= 24 ? 3 : 0;
   const players = room.players.map(player => {
@@ -70,12 +72,12 @@ function completeRound(room) {
     player.rewardScore += returned + bonus;
     return { id: player.id, name: player.name, contribution, balance: player.balance, rewardScore: player.rewardScore, score: currentScore(player) };
   });
-  round.total = total; round.returned = returned; round.bonus = bonus; round.players = players; round.phase = 'result';
-  room.history.push({ number: round.number, condition: round.condition, total, returned, bonus, players });
+  round.total = total; round.cumulativeTotal = cumulativeTotal; round.returned = returned; round.bonus = bonus; round.players = players; round.phase = 'result';
+  room.history.push({ number: round.number, condition: round.condition, total, cumulativeTotal, returned, bonus, players });
 }
 function view(room, access) {
   const history = room.history.map(item => ({
-    number: item.number, condition: item.condition, total: item.total, returned: item.returned, bonus: item.bonus,
+    number: item.number, condition: item.condition, total: item.total, cumulativeTotal: item.cumulativeTotal, returned: item.returned, bonus: item.bonus,
     players: conditions[item.condition].public
       ? item.players.map(p => ({ name: p.name, contribution: p.contribution, balance: p.balance, score: p.score }))
       : [item.players.find(p => p.id === access.player.id)].filter(Boolean).map(p => ({ name: p.name, contribution: null, balance: p.balance, score: p.score }))
@@ -88,6 +90,7 @@ function view(room, access) {
     result.round = {
       number: r.number, condition: r.condition, public: conditions[r.condition].public,
       submittedCount: r.submissions.size, mineSubmitted: Boolean(own),
+      bankTotal: room.engineTotal + (conditions[r.condition].public ? [...r.submissions.values()].reduce((sum, item) => sum + item.value, 0) : 0),
       myBalance: access.player.balance, myScore: currentScore(access.player),
       submissions: conditions[r.condition].public ? room.players.map(p => ({ name: p.name, value: r.submissions.has(p.id) ? r.submissions.get(p.id).value : null })) : []
     };
@@ -100,7 +103,7 @@ function view(room, access) {
   const mine = r.players.find(p => p.id === access.player.id);
   result.round = {
     number: r.number, condition: r.condition, public: conditions[r.condition].public,
-    total: r.total, returned: r.returned, bonus: r.bonus,
+    total: r.total, cumulativeTotal: r.cumulativeTotal, returned: r.returned, bonus: r.bonus,
     finished: r.number >= 5,
     myBalance: access.player.balance, myScore: mine ? mine.score : null,
     players: conditions[r.condition].public ? r.players.map(p => ({ name: p.name, contribution: p.contribution, balance: p.balance, score: p.score })) : []
@@ -112,7 +115,7 @@ async function handleApi(req, res, url) {
   if (req.method === 'POST' && url.pathname === '/api/rooms') {
     const data = await readBody(req); const code = roomCode(); const hostToken = token(); const hostId = token();
     const host = { id: hostId, token: hostToken, name: validName(data.name, '방장'), lastSeen: Date.now() };
-    const room = { code, hostToken, hostId, players: [host], round: null, nextNumber: 1, history: [] };
+    const room = { code, hostToken, hostId, players: [host], round: null, nextNumber: 1, history: [], engineTotal: 0 };
     rooms.set(code, room);
     return json(res, 201, { code, token: hostToken });
   }
